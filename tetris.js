@@ -1,17 +1,8 @@
-const makeLine = (length) => Array.from({ length }, _ => "~");      // Call twice to make grid
-// const grid = makeLine(8).map(_ => makeLine(8));
+// GENERAL FUNCTIONS
+const makeLine = (length, char = "~") => Array.from({ length }, _ => char);      // Call twice to make grid
+const random = () => Math.trunc(Math.random() * figures.length);
 
-const figures = {
-    square: {
-        name: "square",
-        coords: [[2,0], [3,0], [2,1], [3,1]],
-    },
-    ele: {
-        name: "name",
-        coords: [[2,0], [2,1], [2,2], [3,2]],
-    },
-}
-
+// FIGURE
 class Figure {
     constructor({ name, coords:[ square1, square2, square3, square4 ] }) {
         this.name = name;
@@ -38,31 +29,55 @@ class Figure {
     static updatePosition(square) {
         square.positionY++;
     }
+
+    static moveRight(square) {
+        square.positionX++;
+    }
+
+    static moveLeft(square) {
+        square.positionX--;
+    }
+
+    static checkOutsideBoard({ coords: { square1: { positionX: a }, square2: { positionX: b }, 
+                                         square3: { positionX: c }, square4: { positionX: d } } }, dir) {
+        if (dir === "left") {
+            return Math.min(a, b, c, d) - 1 < 0;
+        } else {
+            return Math.max(a, b, c, d) + 1 > game.grid[0].length - 1;
+        }
+    }
 }
 
+// GAME
 class Game {
-    constructor(ms, col, row) {
-        this.grid = makeLine(col).map(_ => makeLine(row));
-        this.timerID = ms;
-        this.grid[5][2] = "#";
+    constructor(ms, row, col) {
+        this.grid = makeLine(row).map(_ => makeLine(col));
+        this.ms = ms;
     }
 
-    start(figure) {
-        this.print(this.grid);
-        this.timerID = setInterval(() => {
+    start() {
+        figure = new Figure(figures[random()]);
+        const timerID = setInterval(() => {
             let bool = this.updateGrid(figure);
-            if (bool) clearInterval(this.timerID);
-            this.print(this.grid);
-        }, 1000);
+            if (bool) clearInterval(timerID);
+            DOM.printDOM(this.grid);
+        }, this.ms);
     }
 
-    print() {
-        this.grid.forEach(row => console.log(row.join(" ").toString(), "\n"));
+    horizontalDisplacement(key) {
+        if (key === "ArrowLeft" && !Figure.checkOutsideBoard(figure, "left")) this.updateGrid(figure, true, "left");
+        else if (key === "ArrowRight" && !Figure.checkOutsideBoard(figure, "right")) this.updateGrid(figure, true, "right");
+
+        // const timerID = setInterval(() => {
+        //     if (moveLeft && !Figure.checkOutsideBoard(figure, "left")) this.updateGrid(figure, true, "left");
+        //     else if (moveRight && !Figure.checkOutsideBoard(figure, "right")) this.updateGrid(figure, true, "right");
+        //     else clearInterval(timerID);
+        // }, 1000);
     }
 
-    updateGrid({ coords:{ square1, square2, square3, square4 } }) {
+    updateGrid({ coords: { square1, square2, square3, square4 } }, horizontal = false, direction) {
         const squares = [square1, square2, square3, square4];
-    
+
         for (const square of squares) {
             if(this.checkCollision(square)) {
                 squares.forEach(square => this.updateCell(square, "#"));
@@ -71,7 +86,12 @@ class Game {
         }
     
         squares.forEach(square => this.updateCell(square, "~"));
-        squares.forEach(square => { Figure.updatePosition(square); this.updateCell(square, "*"); });
+        squares.forEach(square => { 
+            if (horizontal && direction === "right") Figure.moveRight(square);
+            else if (horizontal && direction === "left") Figure.moveLeft(square);
+            else Figure.updatePosition(square);
+            this.updateCell(square, "*");
+        });
     }
 
     updateCell({ positionX, positionY }, char) {
@@ -79,7 +99,7 @@ class Game {
     }
 
     checkCollision({ positionX, positionY }) {
-        return this.grid[positionY + 1][positionX] === "#";
+        return this.grid?.[positionY + 1]?.[positionX] === "#" || positionY + 1 === this.grid.length;
     }
 
     placeFigure(arrOfSquares) {
@@ -87,54 +107,61 @@ class Game {
     }
 }
 
-const figure = new Figure(figures.square);
-new Game(1000, 8, 8).start(figure);
+// DOM
+class DOMmanipulator {
+    constructor() {
+        this.startBtn = document.createElement("button");
+        this.startBtn.classList.add("btn");
+        this.startBtn.textContent = "start";
+        this.startBtn.addEventListener("click", this.startGame);
+        document.querySelector("body").appendChild(this.startBtn);
 
-// const timerId = setInterval(() => {
-//     let bool = updateGrid(figure);
-//     if (bool) clearInterval(timerId);
-//     print(grid);
-// }, 1000);
+        this.gridDOM = document.createElement("div");
+        this.gridDOM.classList.add("grid");
+        document.querySelector("body").appendChild(this.gridDOM);
+    }
 
-// function print(grid) {
-//     grid.forEach(row => console.log(row.join(" ").toString(), "\n"));
-// }
+    startGame() {
+        const rows = 15, cols = 10, ms = 500;
+        game = new Game(ms, rows, cols);
+        game.start();
+    }
 
-// function updatePosition(obj) {
-//     return obj.positionY++;
-// }
+    printDOM(grid) {
+        this.gridDOM.textContent = grid.reduce((acc, row) => acc + (row.join(" ") + "\n"), "");
+    }
+}
 
-// function updateGrid({ coords:{ square1, square2, square3, square4 } }) {
-//     const squares = [square1, square2, square3, square4];
+// GLOBAL VARIABLES 
+const DOM = new DOMmanipulator;
+let game, figure;
+let moveLeft = false, moveRight = false;
 
-//     for (const square of squares) {
-//         if(checkCollision(square)) {
-//             squares.forEach(square => updateCell(square, "#"));
-//             return true;
-//         };
-//     }
-
-//     squares.forEach(square => updateCell(square, "~"));
-//     squares.forEach(square => { updatePosition(square); updateCell(square, "*"); });
-// }
-
-// function updateCell({ positionX, positionY }, char) {
-//     grid[positionY][positionX] = char;
-// }
-
-// function checkCollision({ positionX, positionY }) {
-//     return grid[positionY + 1][positionX] === "#";
-// }
-
-// function placeFigure(arrOfSquares) {
-//     arrOfSquares.forEach(square => updateCell(square, "#"));
-// }
-
-// class DOMmanage {
-//     gridDOM = document.createElement("div");
-//     static {
-//         this.gridDOM.classList.add("grid");
-        
-//     }
+addEventListener("keydown", (e) => {
+    game.horizontalDisplacement(e.key)
     
-// }
+    if(e.key === "ArrowLeft") {
+        moveLeft = true;
+    } else if (e.key === "ArrowRight") {
+        moveRight = true;
+    }
+});
+addEventListener("keyup", (e) => {
+
+    if(e.key === "ArrowLeft") {
+        moveLeft = false;
+    } else if (e.key === "ArrowRight") {
+        moveRight = false;
+    }
+});
+
+const figures = [
+    {
+        name: "square",
+        coords: [[2,0], [3,0], [2,1], [3,1]],
+    },
+    {
+        name: "name",
+        coords: [[2,0], [2,1], [2,2], [3,2]],
+    },
+];
