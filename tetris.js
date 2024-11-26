@@ -1,85 +1,128 @@
 // GENERAL FUNCTIONS
 const makeLine = (length, char = "~") => Array.from({ length }, _ => char);      // Call twice to make grid
-const random = () => Math.trunc(Math.random() * figures.length);
+const random = (num) => Math.trunc(Math.random() * num);
+
+// FIGURES
+const figures = [
+    {
+        id: 0,
+        name: "square",
+        coords: [
+            [[0,0], [1,0], [0,1], [1,1]],
+        ]
+    },
+    {
+        id: 1,
+        name: "ele",
+        coords: [
+            [[0,0], [1,0], [0,1], [0,2]],
+            [[0,0], [0,1], [1,1], [2,1]],
+        ],
+    },
+    {
+        id: 2,
+        name: "stick",
+        coords: [
+            [[0,0], [0,1], [0,2], [0,3]],
+            [[-1,1], [0,1], [1,1], [2,1]],
+        ],
+    },
+    {
+        id: 3,
+        name: "zeta",
+        coords: [
+            [[0,1], [1,1], [1, 0], [2,0]],
+            [[0,0], [0,1], [1,1], [1,2]],
+        ]
+    },
+    {
+        id: 4,
+        name: "clover",
+        coords: [
+            [[0,1], [1,1], [1,0], [2,1]],
+            [[1,0], [1,1], [1,2], [2,1]],
+        ]
+    }
+];
 
 // FIGURE
 class Figure {
-    constructor({ id, coords:[ square1, square2, square3, square4 ] }) {
-        this.id = id;
-        this.coords = {
-            square1: {
-                id: 0,
-                positionX: square1[0] + 2,
-                positionY: square1[1],
-            },
-            square2: {
-                id: 1,
-                positionX: square2[0] + 2,
-                positionY: square2[1],
-            },
-            square3: {
-                id: 2,
-                positionX: square3[0] + 2,
-                positionY: square3[1],
-            },
-            square4: {
-                id: 3,
-                positionX: square4[0] + 2,
-                positionY: square4[1],
-            },
-        },
-        this.position = true;     // STANDARD/FLIPPED
+    constructor({ id, coords }) {
+        this.figure = id;
+        this.allCoords = coords.map((currentPosition, i) => {
+            return {
+                position: i,
+                coords: currentPosition.map((square, i) => {
+                    return {
+                        square: i,
+                        positionX: square[0],
+                        positionY: square[1],
+                    }
+                }),
+            }
+        });
+        this.currentPosition = this.allCoords[random(this.allCoords.length)];
     }
 
-    static updatePosition(square) {
-        square.positionY++;
+    updatePosition() {
+        this.currentPosition.coords.forEach(square => square.positionY++);
     }
 
-    static moveRight(square) {
-        square.positionX++;
+    moveRight() {
+        if(square.positionX < game.grid[0].length) this.currentPosition.forEach(square => square.positionX++);
     }
 
-    static moveLeft(square) {
-        square.positionX--;
+    moveLeft() {
+        if(square.positionX > game.grid[0].length) this.currentPosition.forEach(square => square.positionY--);
     }
 
-    static spin(square) { 
-        // WITH THE ID I CAN SELECT THE CORRECT FIGURE, ID MATCHES THE POSITION IN THE ARRAY
-        const squareCoords = figures[figure.id].coords[square.id];
-        const alternativeSquareCoords = figures[figure.id].alternative[square.id];
-        const differenceX = alternativeSquareCoords[0] - squareCoords[0];
-        const differenceY = alternativeSquareCoords[1] - squareCoords[1];
+    // spin() { 
+    //     for (square of this.coords) {
+    //         const newCoords = this.
+    //         // const originalFigure = figures[this.id];                // access to the correct figure
+    //         // const squareCoords = originalFigure.coords[square.id];  // access to the coords of the current square
+    //         const altSquareCoords = figures[figure.id].alternative[square.id];
+    //         const differenceX = alternativeSquareCoords[0] - squareCoords[0];
+    //         const differenceY = alternativeSquareCoords[1] - squareCoords[1];
+    //     }
+    //     // WITH THE ID I CAN SELECT THE CORRECT FIGURE, ID MATCHES THE POSITION IN THE ARRAY
+    //     const squareCoords = figures[figure.id].coords[square.id];
+    //     const alternativeSquareCoords = figures[figure.id].alternative[square.id];
+        
 
-        // CALCULATES THE NEW POSITION
-        if (figure.position) {
-            square.positionX += differenceX;
-            square.positionY += differenceY;
-        } else {
-            square.positionX -= differenceX;
-            square.positionY -= differenceY;
-        }
-    }
+    //     // CALCULATES THE NEW POSITION
+    //     if (figure.position) {
+    //         square.positionX += differenceX;
+    //         square.positionY += differenceY;
+    //     } else {
+    //         square.positionX -= differenceX;
+    //         square.positionY -= differenceY;
+    //     }
+    // }
 
-    // CHECK IF THE FIGURE IS NOT OUTSIDE THE BOARD
-    static checkOutsideBoard({ coords: { square1: { positionX: a }, square2: { positionX: b }, 
-                                         square3: { positionX: c }, square4: { positionX: d } } }, dir) {
-        if (dir === "left") {
-            return Math.min(a, b, c, d) - 1 < 0;
-        } else {
-            return Math.max(a, b, c, d) + 1 > game.grid[0].length - 1;
-        }
-    }
+    // // CHECK IF THE FIGURE IS NOT OUTSIDE THE BOARD
+    // static checkOutsideBoard({ coords: { square1: { positionX: a }, square2: { positionX: b }, 
+    //                                      square3: { positionX: c }, square4: { positionX: d } } }, dir) {
+    //     if (dir === "left") {
+    //         return Math.min(a, b, c, d) - 1 < 0;
+    //     } else {
+    //         return Math.max(a, b, c, d) + 1 > game.grid[0].length - 1;
+    //     }
+    // }
 }
-
+let a = new Figure(figures[1]);
+console.log(a.currentPosition)
+a.updatePosition()
+console.log(a.currentPosition)
 // GAME
 class Game {
     constructor(ms, row, col) {
-        this.grid = makeLine(row).map(_ => makeLine(col));
+        this.grid = makeLine(col).map(_ => makeLine(row));
         this.ms = ms;
     }
 
     start() {
-        figure = new Figure(figures[random()]);      
+        figure = new Figure(figures[random(figures.length)]);      
 
         const timerID = setInterval(() => {           //  INTERVAL FOR THE RHYTHM OF GAME, ENSURE PIECES GO DOWN
             let bool = this.updateGrid(figure);
@@ -111,14 +154,6 @@ class Game {
             if(this.checkCollision(square)) {
                 squares.forEach(square => this.updateCell(square, "#"));
                 return true;
-            } else if (direction === "up") {    // IF FIGURE IT IS IN A CORNER O NEAR OF ANOTHER FIGURE, RETURN
-                const squareCopy = {};
-                Object.assign(squareCopy, square);
-                Figure.spin(squareCopy);
-                if (!this.grid?.[squareCopy.positionY][squareCopy.positionX] === "~" ||
-                    !this.grid?.[squareCopy.positionY]?.[squareCopy.positionX]) {       //RETURN UNDEFINED IF DOES
-                    return;                                                             // NOT EXIST
-                }
             }
         }
     
@@ -130,6 +165,25 @@ class Game {
             else Figure.updatePosition(square);
             this.updateCell(square, "*");
         });
+    }
+
+    checkCollisionByMove(square, direction) {
+        const squareCopy = {};
+        Object.assign(squareCopy, square);
+
+        if (direction === "up") {
+            Figure.spin(squareCopy);
+        } else if (direction === "left") {
+            Figure.moveLeft(squareCopy);
+        } else if (direction === "right") {
+            Figure.moveRight(square);
+        }
+
+        // CHECK IF SPIN OR DISPLACEMENT IS POSSIBLE
+        if (  (this.grid?.[squareCopy.positionY]?.[squareCopy.positionX] === "#") ||
+               this.grid?.[squareCopy.positionY]?.[squareCopy.positionX] === undefined ) {
+            return;
+        }
     }
 
     updateCell({ positionX, positionY }, char) {
@@ -172,7 +226,7 @@ class DOMmanipulator {
 }
 
 // GLOBAL VARIABLES 
-const DOM = new DOMmanipulator;
+// const DOM = new DOMmanipulator;
 let game, figure;
 let timerKey, arrowKeyPressed;
 
@@ -197,35 +251,3 @@ addEventListener("keyup", (e) => {
         game.executeAction(e.key);
     }
 });
-
-const figures = [
-    {
-        id: 0,
-        name: "square",
-        coords: [[0,0], [1,0], [0,1], [1,1]],
-    },
-    {
-        id: 1,
-        name: "ele",
-        coords: [[0,0], [1,0], [0,1], [0,2]],
-        alternative: [[0,0], [0,1], [1,1], [2,1]],
-    },
-    {
-        id: 2,
-        name: "stick",
-        coords: [[0,0], [0,1], [0,2], [0,3]],
-        alternative: [[-1,1], [0,1], [1,1], [2,1]],
-    },
-    {
-        id: 3,
-        name: "zeta",
-        coords: [[0,1], [1,1], [1, 0], [2,0]],
-        alternative: [[0,0], [0,1], [1,1], [1,2]],
-    },
-    {
-        id: 4,
-        name: "clover",
-        coords: [[0,1], [1,1], [1,0], [2,1]],
-        alternative: [[1,0], [1,1], [1,2], [2,1]],
-    }
-];
