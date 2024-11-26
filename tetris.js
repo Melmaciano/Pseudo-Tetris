@@ -1,6 +1,10 @@
 // GENERAL FUNCTIONS
 const makeLine = (length, char = "~") => Array.from({ length }, _ => char);      // Call twice to make grid
 const random = (num) => Math.trunc(Math.random() * num);
+const deepCopy = (arr) => {
+    if (!Array.isArray(arr)) return arr;
+    else return arr.map(subArr => deepCopy(subArr));
+}
 
 // FIGURES
 const figures = [
@@ -49,44 +53,37 @@ const figures = [
 class Figure {
     constructor({ id, coords }) {
         this.figure = id;
-        this.allCoords = coords.map((currentPosition, i) => {
-            return {
-                position: i,
-                coords: currentPosition.map((square, i) => {
-                    return {
-                        square: i,
-                        positionX: square[0],
-                        positionY: square[1],
-                    }
-                }),
-            }
-        });
-        this.currentPosition = {};
-        Object.assign(this.currentPosition, this.allCoords[random(this.allCoords.length)]);
+        this.allCoords = deepCopy(coords);
+        this.currentIndexPosition = random(this.allCoords.length);
+        this.currentPosition = deepCopy(this.allCoords[this.currentIndexPosition]);
     }
 
     updatePosition() {
-        this.currentPosition.coords.forEach(square => square.positionY++);
+        this.currentPosition.forEach(square => square[1]);
     }
 
     moveRight() {
-        this.currentPosition.coords.forEach(square => square.positionX++);
+        this.currentPosition.forEach(square => square[0]);
     }
 
     moveLeft() {
-        this.currentPosition.coords.forEach(square => square.positionX++);
+        this.currentPosition.forEach(square => square[0]);
     }
 
     spin() { 
         const allCoords = this.allCoords;
-        const originalPosition = allCoords[this.currentPosition.position].coords;
-        const nextPosition = allCoords[(this.currentPosition.position + 1) % (allCoords.length)].coords;
+        const nextIndexPosition = (this.currentIndexPosition + 1) % (allCoords.length);
 
-        this.currentPosition.coords.forEach((square, i) => {
-            const differenceX = nextPosition[i].positionX - originalPosition[i].positionX;
-            const differenceY = nextPosition[i].positionY - originalPosition[i].positionY;
-            square.positionX += differenceX;
-            square.positionY += differenceY;
+        const originalPosition = allCoords[this.currentIndexPosition];
+        const nextPosition = allCoords[nextIndexPosition];
+
+        this.currentIndexPosition = nextIndexPosition;
+
+        this.currentPosition.forEach((square, i) => {
+            const differenceX = nextPosition[i][0] - originalPosition[i][0];
+            const differenceY = nextPosition[i][1] - originalPosition[i][1];
+            square[0] += differenceX;
+            square[1] += differenceY;
         });
     }
 
@@ -100,7 +97,9 @@ class Figure {
     //     }
     // }
 }
-let a = new Figure(figures[1]);
+
+const a = new Figure(figures[1])
+
 // GAME
 class Game {
     constructor(ms, row, col) {
