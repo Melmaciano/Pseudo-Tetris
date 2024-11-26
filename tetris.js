@@ -61,7 +61,8 @@ class Figure {
                 }),
             }
         });
-        this.currentPosition = this.allCoords[random(this.allCoords.length)];
+        this.currentPosition = {};
+        Object.assign(this.currentPosition, this.allCoords[random(this.allCoords.length)]);
     }
 
     updatePosition() {
@@ -69,36 +70,25 @@ class Figure {
     }
 
     moveRight() {
-        if(square.positionX < game.grid[0].length) this.currentPosition.forEach(square => square.positionX++);
+        this.currentPosition.coords.forEach(square => square.positionX++);
     }
 
     moveLeft() {
-        if(square.positionX > game.grid[0].length) this.currentPosition.forEach(square => square.positionY--);
+        this.currentPosition.coords.forEach(square => square.positionX++);
     }
 
-    // spin() { 
-    //     for (square of this.coords) {
-    //         const newCoords = this.
-    //         // const originalFigure = figures[this.id];                // access to the correct figure
-    //         // const squareCoords = originalFigure.coords[square.id];  // access to the coords of the current square
-    //         const altSquareCoords = figures[figure.id].alternative[square.id];
-    //         const differenceX = alternativeSquareCoords[0] - squareCoords[0];
-    //         const differenceY = alternativeSquareCoords[1] - squareCoords[1];
-    //     }
-    //     // WITH THE ID I CAN SELECT THE CORRECT FIGURE, ID MATCHES THE POSITION IN THE ARRAY
-    //     const squareCoords = figures[figure.id].coords[square.id];
-    //     const alternativeSquareCoords = figures[figure.id].alternative[square.id];
-        
+    spin() { 
+        const allCoords = this.allCoords;
+        const originalPosition = allCoords[this.currentPosition.position].coords;
+        const nextPosition = allCoords[(this.currentPosition.position + 1) % (allCoords.length)].coords;
 
-    //     // CALCULATES THE NEW POSITION
-    //     if (figure.position) {
-    //         square.positionX += differenceX;
-    //         square.positionY += differenceY;
-    //     } else {
-    //         square.positionX -= differenceX;
-    //         square.positionY -= differenceY;
-    //     }
-    // }
+        this.currentPosition.coords.forEach((square, i) => {
+            const differenceX = nextPosition[i].positionX - originalPosition[i].positionX;
+            const differenceY = nextPosition[i].positionY - originalPosition[i].positionY;
+            square.positionX += differenceX;
+            square.positionY += differenceY;
+        });
+    }
 
     // // CHECK IF THE FIGURE IS NOT OUTSIDE THE BOARD
     // static checkOutsideBoard({ coords: { square1: { positionX: a }, square2: { positionX: b }, 
@@ -111,9 +101,6 @@ class Figure {
     // }
 }
 let a = new Figure(figures[1]);
-console.log(a.currentPosition)
-a.updatePosition()
-console.log(a.currentPosition)
 // GAME
 class Game {
     constructor(ms, row, col) {
@@ -167,7 +154,7 @@ class Game {
         });
     }
 
-    checkCollisionByMove(square, direction) {
+    checkCollisionByMove(figure, direction) {
         const squareCopy = {};
         Object.assign(squareCopy, square);
 
