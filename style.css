@@ -1,3 +1,7 @@
 .grid {
     white-space: break-spaces;
 }
+
+.hidden {
+    display: none;
+}
