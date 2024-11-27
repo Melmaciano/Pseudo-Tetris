@@ -104,13 +104,14 @@ class Game {
         this.ms = ms;
         this.points = 0;
         this.currentFIgure;
+        this.timerID;
     }
 
     start() {
         DOM.updatePoints(this.points);
         this.currentFIgure = new Figure(figures[random(figures.length)], Math.trunc(this.col / 2));      
 
-        const timerID = setInterval(() => {           //  INTERVAL FOR THE RHYTHM OF GAME, ENSURE PIECES GO DOWN
+        this.timerID = setInterval(() => {           //  INTERVAL FOR THE RHYTHM OF GAME, ENSURE PIECES GO DOWN
             DOM.printDOM(this.grid);
             let value = this.updateGrid(this.currentFIgure);
             if (value === 1) {                               // WHEN A COLLISION IS DETECTED INTERVAL ENDS AND A NEW PIECE
@@ -281,6 +282,7 @@ class DOMmanipulator {
     }
 
     startGame() {
+        if (game) { clearInterval(game.timerID); this.gameOver(); }
         this.gameOverMsg.classList.add("hidden");
         const ms = 400;
         game = new Game(ms, this.colsInput.value, this.rowsInput.value);
