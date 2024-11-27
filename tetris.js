@@ -115,11 +115,11 @@ class Game {
             DOM.printDOM(this.grid);
             let value = this.updateGrid(this.currentFIgure);
             if (value === 1) {                               // WHEN A COLLISION IS DETECTED INTERVAL ENDS AND A NEW PIECE
-                clearInterval(timerID);                      // ENTER
+                clearInterval(this.timerID);                      // ENTER
                 this.start() 
             } else if (value === 2) {
                 this.points = 0;
-                clearInterval(timerID);
+                clearInterval(this.timerID);
                 DOM.gameOver();
             }
         }, this.ms);
